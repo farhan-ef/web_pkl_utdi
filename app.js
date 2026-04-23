@@ -68,8 +68,8 @@ async function createTugas(mentor_id, judul, deskripsi, deadline, target_siswa =
     return await callAPI('createTugas', { mentor_id, judul, deskripsi, deadline, target_siswa });
 }
 
-async function submitTugas(tugas_id, siswa_id, nama_siswa, link_drive) {
-    return await callAPI('submitTugas', { tugas_id, siswa_id, nama_siswa, link_drive });
+async function submitTugas(tugas_id, nama_siswa, link_drive) {
+    return await callAPI('submitTugas', { tugas_id, nama_siswa, link_drive });
 }
 
 async function getPengumpulan(params) {
