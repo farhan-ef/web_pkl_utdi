@@ -175,22 +175,52 @@ async function loadTugas() {
             container.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-style: italic;">Tidak ada tugas.</p>';
             return;
         }
+        
         container.innerHTML = data.map(tugas => `
-            <div class="card" style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #eee;">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <h4 style="margin-bottom: 5px;">${tugas.judul}</h4>
-                </div>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">${tugas.deskripsi}</p>
+            <div class="card" style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #eee; background: #fff; box-shadow: none;">
+                <h4 style="margin-bottom: 5px;">${tugas.judul}</h4>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">${tugas.deskripsi}</p>
+                
                 ${tugas.is_submitted ? `
                     <div style="background: #e3faf3; color: #00b894; padding: 10px; border-radius: 8px; font-size: 0.85rem; text-align: center; font-weight: 600;">
-                        ✅ Selesai
+                        ✅ Sudah Dikumpulkan
                     </div>
                 ` : `
-                    <button onclick="handleTugasSubmit(${tugas.id})" class="btn btn-primary btn-block" style="padding: 8px; font-size: 0.85rem;">Kumpulkan</button>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label style="font-size: 0.75rem; color: #666;">Link Drive Pekerjaan:</label>
+                        <input type="text" id="link_tugas_${tugas.id}" class="form-control" placeholder="Tempel link Google Drive di sini..." style="font-size: 0.8rem; padding: 8px;">
+                    </div>
+                    <button onclick="handleTugasSubmit(${tugas.id})" id="btn_tugas_${tugas.id}" class="btn btn-primary btn-block" style="padding: 8px; font-size: 0.85rem; font-weight: 600;">
+                        Kumpulkan
+                    </button>
                 `}
             </div>
         `).join('');
     } catch (error) {
         container.innerHTML = '<p style="color: red;">Gagal memuat tugas.</p>';
+    }
+}
+
+async function handleTugasSubmit(tugasId) {
+    const input = document.getElementById(`link_tugas_${tugasId}`);
+    const btn = document.getElementById(`btn_tugas_${tugasId}`);
+    const linkDrive = input.value.trim();
+
+    if (!linkDrive) {
+        Swal.fire('Peringatan', 'Harap masukkan link Google Drive pekerjaan Anda.', 'warning');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Mengirim...';
+
+    try {
+        await submitTugas(tugasId, currentUser.nama, linkDrive);
+        Swal.fire('Berhasil!', 'Tugas Anda telah dikumpulkan.', 'success');
+        await loadTugas(); // Refresh list tugas
+    } catch (error) {
+        Swal.fire('Gagal', error.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Kumpulkan';
     }
 }
