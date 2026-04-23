@@ -216,9 +216,27 @@
   }
 
   function handleGetTugas(data) {
-    var rows = getSheet('tugas').getDataRange().getValues();
-    var headers = rows.shift();
-    return rows.map(function(r) { return { id: r[0], judul: r[1], deskripsi: r[2], deadline: r[5] }; });
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var tugasRows = ss.getSheetByName('tugas').getDataRange().getValues();
+    var qRows = ss.getSheetByName('pengumpulan').getDataRange().getValues();
+    
+    var tugasHeaders = tugasRows.shift();
+    var qHeaders = qRows.shift();
+    
+    // Ambil daftar tugas yang sudah dikumpulkan oleh siswa ini
+    var submittedIds = qRows.filter(function(r) { 
+      return String(r[2]).trim() === String(data.nama_siswa).trim(); // Cocokkan Nama Siswa
+    }).map(function(r) { return r[1]; }); // Ambil ID Tugas nya
+
+    return tugasRows.map(function(r) { 
+      return { 
+        id: r[0], 
+        judul: r[1], 
+        deskripsi: r[2], 
+        deadline: r[5],
+        is_submitted: submittedIds.indexOf(r[0]) !== -1 // Cek apakah ID tugas ini ada di daftar yang sudah kumpul
+      }; 
+    });
   }
 
   function handleSubmitTugas(data) {

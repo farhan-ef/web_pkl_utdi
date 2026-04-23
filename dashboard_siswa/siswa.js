@@ -182,8 +182,9 @@ async function loadTugas() {
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">${tugas.deskripsi}</p>
                 
                 ${tugas.is_submitted ? `
-                    <div style="background: #e3faf3; color: #00b894; padding: 10px; border-radius: 8px; font-size: 0.85rem; text-align: center; font-weight: 600;">
-                        ✅ Sudah Dikumpulkan
+                    <div style="background: #e3faf3; color: #00b894; padding: 15px; border-radius: 8px; font-size: 0.85rem; text-align: center; font-weight: 600; line-height: 1.4;">
+                        ✅ Tugas sudah dikumpulkan.<br>
+                        <span style="font-weight: normal; font-size: 0.75rem;">Terimakasih sudah mengumpulkan tugas.</span>
                     </div>
                 ` : `
                     <div class="form-group" style="margin-bottom: 10px;">
