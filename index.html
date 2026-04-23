@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PKL UTDI</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="login-page">
+    <div id="notification-container"></div>
+
+    <div class="card login-card fade-in">
+        <div class="login-header">
+            <img src="assets/img/logo.png" alt="Logo">
+            <h1>PKL UTDI</h1>
+            <p style="color: var(--text-muted);">Masukkan akun untuk melanjutkan</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Email Kerja</label>
+                <input type="email" id="email" placeholder="nama@instansi.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Kata Sandi</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" id="loginBtn" class="btn btn-primary btn-block">
+                <i class="fas fa-sign-in-alt"></i> &nbsp;Masuk ke Dashboard
+            </button>
+        </form>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="components/utils.js"></script>
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+
+            const user = isLoggedIn();
+            if (user) {
+                redirectByRole(user);
+            }
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '⏳ Menghubungkan...';
+                const loadingNotif = showNotification('Sedang memproses login...', 'loading');
+
+                try {
+                    const user = await login(email, password);
+                    loadingNotif.remove();
+                    showNotification('Login berhasil! Mengarahkan...', 'success');
+                    setTimeout(() => redirectByRole(user), 1000);
+                } catch (error) {
+                    loadingNotif.remove();
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = 'Login';
+                    showNotification(error.message, 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

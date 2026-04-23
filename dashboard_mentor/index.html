@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Dashboard - PKL UTDI</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div id="notification-container"></div>
+    <div id="navbar-container"></div>
+
+    <main class="container fade-in">
+        <div class="grid grid-3">
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-plus-circle"></i> Buat Tugas Baru</h3>
+                <form id="tugasForm">
+                    <div class="form-group">
+                        <label>Judul Tugas *</label>
+                        <input type="text" id="judulTugas" placeholder="Contoh: Laporan Mingguan" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Deskripsi *</label>
+                        <textarea id="deskripsiTugas" placeholder="Detail instruksi tugas..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Siswa (Opsional)</label>
+                        <select id="targetSiswa">
+                            <option value="all">-- Semua Siswa (Tugas Umum) --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Deadline (Opsional)</label>
+                        <input type="date" id="deadlineTugas">
+                    </div>
+                    <button type="submit" id="createTugasBtn" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> &nbsp;Publikasikan Tugas</button>
+                </form>
+            </div>
+            <div class="card" style="grid-column: span 2;">
+                <h3 class="card-title"><i class="fas fa-list-check"></i> Monitoring Pengumpulan</h3>
+                <div id="mentorTugasList">
+                    <p style="text-align: center; color: var(--text-muted);">Memuat daftar tugas...</p>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h3 class="card-title">📥 Pengumpulan Siswa</h3>
+            <div class="form-group" style="max-width: 400px; margin-bottom: 2rem;">
+                <label>Pilih Tugas</label>
+                <select id="selectTugas">
+                    <option value="">-- Pilih Tugas untuk Melihat Pengumpulan --</option>
+                </select>
+            </div>
+            <div id="pengumpulanList" class="grid grid-3">
+                <p style="text-align: center; color: var(--text-muted); grid-column: 1 / -1;">Silakan pilih tugas di atas.</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="../config.js"></script>
+    <script src="../components/utils.js"></script>
+    <script src="../components/navbar.js"></script>
+    <script src="../app.js"></script>
+    <script src="mentor.js"></script>
+</body>
+</html>
