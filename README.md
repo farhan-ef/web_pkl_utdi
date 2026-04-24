@@ -39,4 +39,4 @@ Sebagai aplikasi berbasis Google Apps Script dan Vanilla JavaScript, terdapat be
 - Penggunaan **Database NoSQL** jika jumlah siswa mencapai ratusan/ribuan.
 
 ---
-*Dibuat oleh Antigravity untuk PKL UTDI - 2024*
+*Farhan f PKL UTDI - 2026*
