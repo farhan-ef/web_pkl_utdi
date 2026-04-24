@@ -19,7 +19,12 @@
                 <i class="fas fa-user-graduate"></i>
             </div>
             <div style="flex: 1;">
-                <h2 id="profileNama" style="margin: 0; font-size: 1.25rem;">-</h2>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <h2 id="profileNama" style="margin: 0; font-size: 1.25rem;">-</h2>
+                    <button onclick="openEditProfileModal()" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.9rem;" title="Edit Profil">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
                 <div style="display: flex; gap: 15px; margin-top: 5px; font-size: 0.85rem; color: var(--text-muted);">
                     <span><i class="fas fa-school" style="color: #6c757d;"></i> <span id="profileSekolah">-</span></span>
                     <span><i class="fas fa-calendar-alt" style="color: #6c757d;"></i> <span id="profilePeriode">-</span></span>

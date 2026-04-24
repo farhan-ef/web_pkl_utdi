@@ -103,47 +103,18 @@ async function openUserModal(user = null) {
                     <option value="mentor" ${user?.role === 'mentor' ? 'selected' : ''}>Mentor</option>
                     <option value="admin" ${user?.role === 'admin' ? 'selected' : ''}>Admin</option>
                 </select>
-                
-                <div id="siswa-only-fields" style="display: ${user?.role === 'siswa' || !user ? 'block' : 'none'}; border-top: 1px solid #eee; margin-top: 15px; padding-top: 10px;">
-                    <p style="text-align: left; font-size: 0.8rem; font-weight: bold; margin: 5px 0 0 25px;">Informasi Sekolah & Periode</p>
-                    <input id="swal-sekolah" class="swal2-input" placeholder="Nama Sekolah" value="${user ? (user.nama_sekolah || '') : ''}">
-                    <div style="display: flex; gap: 10px; margin: 0 25px;">
-                        <div style="flex: 1; text-align: left;">
-                            <label style="font-size: 0.7rem;">Mulai PKL</label>
-                            <input id="swal-mulai" class="swal2-input" type="date" style="margin: 5px 0;" value="${user ? (user.pkl_mulai || '') : ''}">
-                        </div>
-                        <div style="flex: 1; text-align: left;">
-                            <label style="font-size: 0.7rem;">Selesai PKL</label>
-                            <input id="swal-selesai" class="swal2-input" type="date" style="margin: 5px 0;" value="${user ? (user.pkl_selesai || '') : ''}">
-                        </div>
-                    </div>
-                </div>
             </div>`,
         focusConfirm: false,
         showCancelButton: true,
-        didOpen: () => {
-            const roleSelect = document.getElementById('swal-role');
-            const extraFields = document.getElementById('siswa-only-fields');
-            roleSelect.addEventListener('change', (e) => {
-                extraFields.style.display = e.target.value === 'siswa' ? 'block' : 'none';
-            });
-        },
         preConfirm: () => {
             const role = document.getElementById('swal-role').value;
-            const data = {
+            return {
                 id: user ? user.id : null,
                 nama: document.getElementById('swal-nama').value,
                 email: document.getElementById('swal-email').value,
                 password: document.getElementById('swal-pass').value,
                 role: role
-            };
-            
-            if (role === 'siswa') {
-                data.nama_sekolah = document.getElementById('swal-sekolah').value;
-                data.pkl_mulai = document.getElementById('swal-mulai').value;
-                data.pkl_selesai = document.getElementById('swal-selesai').value;
             }
-            return data;
         }
     });
 

@@ -8,6 +8,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadNavbar('navbar-container', 'Dashboard Siswa');
     setupEventListeners();
     renderProfile();
+    
+    // Auto-prompt jika profil belum lengkap
+    if (!currentUser.nama_sekolah || !currentUser.pkl_mulai || !currentUser.pkl_selesai) {
+        setTimeout(() => {
+            Swal.fire({
+                title: 'Lengkapi Profil',
+                text: 'Harap lengkapi asal sekolah dan periode PKL Anda terlebih dahulu.',
+                icon: 'info',
+                confirmButtonText: 'Lengkapi Sekarang'
+            }).then((result) => {
+                if (result.isConfirmed) openEditProfileModal();
+            });
+        }, 1000);
+    }
+    
     await loadInitialData();
 });
 
@@ -33,6 +48,72 @@ function renderProfile() {
         document.getElementById('profilePeriode').innerText = `${formatDate(currentUser.pkl_mulai)} - ${formatDate(currentUser.pkl_selesai)}`;
     } else {
         document.getElementById('profilePeriode').innerText = 'Periode PKL Belum Diatur';
+    }
+}
+
+async function openEditProfileModal() {
+    const { value: formValues } = await Swal.fire({
+        title: 'Edit Profil Siswa',
+        html: `
+            <div style="text-align: left;">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 5px;">Nama Sekolah / Instansi</label>
+                    <input id="swal-sekolah" class="swal2-input" style="width: 100%; margin: 0;" placeholder="Contoh: SMK Negeri 1 Yogyakarta" value="${currentUser.nama_sekolah || ''}">
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 5px;">Mulai PKL</label>
+                        <input id="swal-mulai" class="swal2-input" type="date" style="width: 100%; margin: 0;" value="${currentUser.pkl_mulai || ''}">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 5px;">Selesai PKL</label>
+                        <input id="swal-selesai" class="swal2-input" type="date" style="width: 100%; margin: 0;" value="${currentUser.pkl_selesai || ''}">
+                    </div>
+                </div>
+            </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: '💾 Simpan Perubahan',
+        cancelButtonText: 'Batal',
+        preConfirm: () => {
+            const sekolah = document.getElementById('swal-sekolah').value.trim();
+            const mulai = document.getElementById('swal-mulai').value;
+            const selesai = document.getElementById('swal-selesai').value;
+
+            if (!sekolah || !mulai || !selesai) {
+                Swal.showValidationMessage('Semua data wajib diisi!');
+                return false;
+            }
+
+            return {
+                nama_sekolah: sekolah,
+                pkl_mulai: mulai,
+                pkl_selesai: selesai
+            }
+        }
+    });
+
+    if (formValues) {
+        try {
+            Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+            
+            const response = await callAPI('updateProfile', {
+                userId: currentUser.id,
+                ...formValues
+            });
+
+            // Update sesi lokal
+            currentUser.nama_sekolah = formValues.nama_sekolah;
+            currentUser.pkl_mulai = formValues.pkl_mulai;
+            currentUser.pkl_selesai = formValues.pkl_selesai;
+            localStorage.setItem('userSession', JSON.stringify(currentUser));
+
+            renderProfile();
+            Swal.fire('Berhasil', response.message, 'success');
+        } catch (error) {
+            Swal.fire('Gagal', error.message, 'error');
+        }
     }
 }
 

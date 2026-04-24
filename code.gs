@@ -27,6 +27,7 @@
         else if (action === 'deleteUser') result = handleDeleteUser(data);
         else if (action === 'getConfig') result = handleGetConfig();
         else if (action === 'updateConfig') result = handleUpdateConfig(data);
+        else if (action === 'updateProfile') result = handleUpdateProfile(data);
         else throw new Error('Action tidak dikenal: ' + action);
         
         output.setContent(JSON.stringify({ status: 'success', data: result }));
@@ -280,6 +281,35 @@
           return { message: '✅ User diperbarui!' };
         }
       }
+    }
+    function handleUpdateProfile(data) {
+      var sheet = getSheet('users');
+      var rows = sheet.getDataRange().getValues();
+      var headers = rows[0].map(function(h) { return String(h).toLowerCase().trim(); });
+      
+      for (var i = 1; i < rows.length; i++) {
+        if (rows[i][0] == data.userId) {
+          if (headers.indexOf('nama_sekolah') !== -1) sheet.getRange(i + 1, headers.indexOf('nama_sekolah') + 1).setValue(data.nama_sekolah);
+          if (headers.indexOf('pkl_mulai') !== -1) sheet.getRange(i + 1, headers.indexOf('pkl_mulai') + 1).setValue(data.pkl_mulai);
+          if (headers.indexOf('pkl_selesai') !== -1) sheet.getRange(i + 1, headers.indexOf('pkl_selesai') + 1).setValue(data.pkl_selesai);
+          
+          // Update sheet siswa juga
+          var sSheet = getSheet('siswa');
+          var sRows = sSheet.getDataRange().getValues();
+          var sHeaders = sRows[0].map(function(h) { return String(h).toLowerCase().trim(); });
+          for (var j = 1; j < sRows.length; j++) {
+            if (sRows[j][0] == data.userId) {
+              if (sHeaders.indexOf('nama_sekolah') !== -1) sSheet.getRange(j + 1, sHeaders.indexOf('nama_sekolah') + 1).setValue(data.nama_sekolah);
+              if (sHeaders.indexOf('pkl_mulai') !== -1) sSheet.getRange(j + 1, sHeaders.indexOf('pkl_mulai') + 1).setValue(data.pkl_mulai);
+              if (sHeaders.indexOf('pkl_selesai') !== -1) sSheet.getRange(j + 1, sHeaders.indexOf('pkl_selesai') + 1).setValue(data.pkl_selesai);
+              break;
+            }
+          }
+
+          return { message: '✅ Profil diperbarui!' };
+        }
+      }
+      throw new Error("User tidak ditemukan");
     }
 
     function handleDeleteUser(data) {
