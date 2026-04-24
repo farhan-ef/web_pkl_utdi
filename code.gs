@@ -143,11 +143,15 @@
 
     function handleLogin(data) {
       var rows = getSheet('users').getDataRange().getValues();
-      var headers = rows.shift();
+      var headers = rows.shift().map(function(h) { return String(h).toLowerCase().trim(); });
       for (var i = 0; i < rows.length; i++) {
         if (String(rows[i][headers.indexOf('email')]).trim() === String(data.email).trim() && 
             String(rows[i][headers.indexOf('password')]).trim() === String(data.password).trim()) {
-          return { id: rows[i][0], nama: rows[i][1], email: rows[i][2], role: rows[i][4] };
+          var userObj = {};
+          for (var j = 0; j < headers.length; j++) {
+            userObj[headers[j]] = rows[i][j];
+          }
+          return userObj;
         }
       }
       throw new Error('Email atau password salah');
@@ -178,17 +182,101 @@
     function handleAddUser(data) {
       var sheet = getSheet('users');
       var id = getNextId(sheet);
-      sheet.appendRow([id, data.nama, data.email, data.password, data.role]);
-      if (data.role === 'siswa') getSheet('siswa').appendRow([id, data.nama, data.email, data.id_mentor || '']);
+      
+      // Pastikan header lengkap
+      var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      if (headers.indexOf('nama_sekolah') === -1) {
+        sheet.getRange(1, 6, 1, 3).setValues([['nama_sekolah', 'pkl_mulai', 'pkl_selesai']]);
+      }
+      
+      // id, nama, email, password, role, nama_sekolah, pkl_mulai, pkl_selesai
+      sheet.appendRow([
+        id, 
+        data.nama, 
+        data.email, 
+        data.password, 
+        data.role, 
+        data.nama_sekolah || '', 
+        data.pkl_mulai || '', 
+        data.pkl_selesai || ''
+      ]);
+      
+      if (data.role === 'siswa') {
+        var sSheet = getSheet('siswa');
+        var sHeaders = sSheet.getRange(1, 1, 1, sSheet.getLastColumn()).getValues()[0];
+        if (sHeaders.indexOf('nama_sekolah') === -1) {
+          sSheet.getRange(1, 5, 1, 3).setValues([['nama_sekolah', 'pkl_mulai', 'pkl_selesai']]);
+        }
+        // id, nama, email, id_mentor, nama_sekolah, pkl_mulai, pkl_selesai
+        getSheet('siswa').appendRow([
+          id, 
+          data.nama, 
+          data.email, 
+          data.id_mentor || '', 
+          data.nama_sekolah || '', 
+          data.pkl_mulai || '', 
+          data.pkl_selesai || ''
+        ]);
+      }
       return { message: '✅ Berhasil tambah user!' };
     }
 
     function handleUpdateUser(data) {
       var sheet = getSheet('users');
       var rows = sheet.getDataRange().getValues();
+      var headers = rows[0].map(function(h) { return String(h).toLowerCase().trim(); });
+      
+      // Pastikan header lengkap
+      if (headers.indexOf('nama_sekolah') === -1) {
+        sheet.getRange(1, 6, 1, 3).setValues([['nama_sekolah', 'pkl_mulai', 'pkl_selesai']]);
+        rows = sheet.getDataRange().getValues(); // Refresh rows
+        headers = rows[0].map(function(h) { return String(h).toLowerCase().trim(); });
+      }
+      
       for (var i = 1; i < rows.length; i++) {
         if (rows[i][0] == data.id) {
-          sheet.getRange(i + 1, 1, 1, 5).setValues([[data.id, data.nama, data.email, data.password, data.role]]);
+          // Siapkan data array berdasarkan jumlah headers
+          var newRow = rows[i];
+          newRow[headers.indexOf('id')] = data.id;
+          newRow[headers.indexOf('nama')] = data.nama;
+          newRow[headers.indexOf('email')] = data.email;
+          newRow[headers.indexOf('password')] = data.password;
+          newRow[headers.indexOf('role')] = data.role;
+          
+          if (headers.indexOf('nama_sekolah') !== -1) newRow[headers.indexOf('nama_sekolah')] = data.nama_sekolah || '';
+          if (headers.indexOf('pkl_mulai') !== -1) newRow[headers.indexOf('pkl_mulai')] = data.pkl_mulai || '';
+          if (headers.indexOf('pkl_selesai') !== -1) newRow[headers.indexOf('pkl_selesai')] = data.pkl_selesai || '';
+          
+          sheet.getRange(i + 1, 1, 1, newRow.length).setValues([newRow]);
+          
+          // Update di sheet siswa juga jika rolnya siswa
+          if (data.role === 'siswa') {
+            var sSheet = getSheet('siswa');
+            var sRows = sSheet.getDataRange().getValues();
+            var sHeaders = sRows[0].map(function(h) { return String(h).toLowerCase().trim(); });
+            
+            if (sHeaders.indexOf('nama_sekolah') === -1) {
+                sSheet.getRange(1, 5, 1, 3).setValues([['nama_sekolah', 'pkl_mulai', 'pkl_selesai']]);
+                sRows = sSheet.getDataRange().getValues();
+                sHeaders = sRows[0].map(function(h) { return String(h).toLowerCase().trim(); });
+            }
+
+            for (var j = 1; j < sRows.length; j++) {
+              if (sRows[j][0] == data.id) {
+                var sHeaders = sRows[0].map(function(h) { return String(h).toLowerCase().trim(); });
+                var sRow = sRows[j];
+                sRow[0] = data.id;
+                sRow[1] = data.nama;
+                sRow[2] = data.email;
+                if (sHeaders.indexOf('nama_sekolah') !== -1) sRow[sHeaders.indexOf('nama_sekolah')] = data.nama_sekolah || '';
+                if (sHeaders.indexOf('pkl_mulai') !== -1) sRow[sHeaders.indexOf('pkl_mulai')] = data.pkl_mulai || '';
+                if (sHeaders.indexOf('pkl_selesai') !== -1) sRow[sHeaders.indexOf('pkl_selesai')] = data.pkl_selesai || '';
+                sSheet.getRange(j + 1, 1, 1, sRow.length).setValues([sRow]);
+                break;
+              }
+            }
+          }
+          
           return { message: '✅ User diperbarui!' };
         }
       }

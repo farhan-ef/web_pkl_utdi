@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     loadNavbar('navbar-container', 'Dashboard Siswa');
     setupEventListeners();
+    renderProfile();
     await loadInitialData();
 });
 
@@ -21,6 +22,17 @@ function setupEventListeners() {
         selectStatus.addEventListener('change', () => {
             buktiContainer.style.display = (selectStatus.value === 'hadir') ? 'none' : 'block';
         });
+    }
+}
+
+function renderProfile() {
+    document.getElementById('profileNama').innerText = currentUser.nama || 'Siswa';
+    document.getElementById('profileSekolah').innerText = currentUser.nama_sekolah || 'Asal Sekolah Belum Diatur';
+    
+    if (currentUser.pkl_mulai && currentUser.pkl_selesai) {
+        document.getElementById('profilePeriode').innerText = `${formatDate(currentUser.pkl_mulai)} - ${formatDate(currentUser.pkl_selesai)}`;
+    } else {
+        document.getElementById('profilePeriode').innerText = 'Periode PKL Belum Diatur';
     }
 }
 

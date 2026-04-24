@@ -75,6 +75,7 @@ async function fetchUsers() {
                 <td>${user.nama}</td>
                 <td>${user.email}</td>
                 <td><span class="badge ${user.role === 'admin' ? 'badge-danger' : (user.role === 'mentor' ? 'badge-warning' : 'badge-success')}">${user.role}</span></td>
+                <td style="font-size: 0.85rem; color: #666;">${user.nama_sekolah || '-'}</td>
                 <td>
                     <div class="action-btns">
                         <button class="btn btn-primary btn-sm" onclick="openUserModal(${JSON.stringify(user).replace(/"/g, '&quot;')})">Edit</button>
@@ -93,24 +94,56 @@ async function openUserModal(user = null) {
     const { value: formValues } = await Swal.fire({
         title: user ? 'Edit Pengguna' : 'Tambah Pengguna Baru',
         html:
-            `<input id="swal-nama" class="swal2-input" placeholder="Nama Lengkap" value="${user ? user.nama : ''}">` +
-            `<input id="swal-email" class="swal2-input" placeholder="Email" value="${user ? user.email : ''}">` +
-            `<input id="swal-pass" class="swal2-input" type="password" placeholder="Password" value="${user ? user.password : ''}">` +
-            `<select id="swal-role" class="swal2-input">
-                <option value="siswa" ${user?.role === 'siswa' ? 'selected' : ''}>Siswa</option>
-                <option value="mentor" ${user?.role === 'mentor' ? 'selected' : ''}>Mentor</option>
-                <option value="admin" ${user?.role === 'admin' ? 'selected' : ''}>Admin</option>
-            </select>`,
+            `<div class="swal-form">
+                <input id="swal-nama" class="swal2-input" placeholder="Nama Lengkap" value="${user ? user.nama : ''}">
+                <input id="swal-email" class="swal2-input" placeholder="Email" value="${user ? user.email : ''}">
+                <input id="swal-pass" class="swal2-input" type="password" placeholder="Password" value="${user ? user.password : ''}">
+                <select id="swal-role" class="swal2-input">
+                    <option value="siswa" ${user?.role === 'siswa' ? 'selected' : ''}>Siswa</option>
+                    <option value="mentor" ${user?.role === 'mentor' ? 'selected' : ''}>Mentor</option>
+                    <option value="admin" ${user?.role === 'admin' ? 'selected' : ''}>Admin</option>
+                </select>
+                
+                <div id="siswa-only-fields" style="display: ${user?.role === 'siswa' || !user ? 'block' : 'none'}; border-top: 1px solid #eee; margin-top: 15px; padding-top: 10px;">
+                    <p style="text-align: left; font-size: 0.8rem; font-weight: bold; margin: 5px 0 0 25px;">Informasi Sekolah & Periode</p>
+                    <input id="swal-sekolah" class="swal2-input" placeholder="Nama Sekolah" value="${user ? (user.nama_sekolah || '') : ''}">
+                    <div style="display: flex; gap: 10px; margin: 0 25px;">
+                        <div style="flex: 1; text-align: left;">
+                            <label style="font-size: 0.7rem;">Mulai PKL</label>
+                            <input id="swal-mulai" class="swal2-input" type="date" style="margin: 5px 0;" value="${user ? (user.pkl_mulai || '') : ''}">
+                        </div>
+                        <div style="flex: 1; text-align: left;">
+                            <label style="font-size: 0.7rem;">Selesai PKL</label>
+                            <input id="swal-selesai" class="swal2-input" type="date" style="margin: 5px 0;" value="${user ? (user.pkl_selesai || '') : ''}">
+                        </div>
+                    </div>
+                </div>
+            </div>`,
         focusConfirm: false,
         showCancelButton: true,
+        didOpen: () => {
+            const roleSelect = document.getElementById('swal-role');
+            const extraFields = document.getElementById('siswa-only-fields');
+            roleSelect.addEventListener('change', (e) => {
+                extraFields.style.display = e.target.value === 'siswa' ? 'block' : 'none';
+            });
+        },
         preConfirm: () => {
-            return {
+            const role = document.getElementById('swal-role').value;
+            const data = {
                 id: user ? user.id : null,
                 nama: document.getElementById('swal-nama').value,
                 email: document.getElementById('swal-email').value,
                 password: document.getElementById('swal-pass').value,
-                role: document.getElementById('swal-role').value
+                role: role
+            };
+            
+            if (role === 'siswa') {
+                data.nama_sekolah = document.getElementById('swal-sekolah').value;
+                data.pkl_mulai = document.getElementById('swal-mulai').value;
+                data.pkl_selesai = document.getElementById('swal-selesai').value;
             }
+            return data;
         }
     });
 
