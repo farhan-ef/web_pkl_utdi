@@ -58,7 +58,7 @@ async function openEditProfileModal() {
             <div style="text-align: left;">
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 5px;">Nama Sekolah / Instansi</label>
-                    <input id="swal-sekolah" class="swal2-input" style="width: 100%; margin: 0;" placeholder="Contoh: SMK Negeri 1 Yogyakarta" value="${currentUser.nama_sekolah || ''}">
+                    <input id="swal-sekolah" class="swal2-input" style="width: 100%; margin: 0;" placeholder="Contoh: SMK Negeri 1 Mars" value="${currentUser.nama_sekolah || ''}">
                 </div>
                 <div style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex: 1;">
