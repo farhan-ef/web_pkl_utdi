@@ -1,10 +1,5 @@
 // ======================== UTILITY FUNCTIONS ========================
 
-/**
- * Tampilkan pesan notifikasi
- * @param {string} message - Pesan yang ingin ditampilkan
- * @param {string} type - 'error', 'success', 'loading'
- */
 function showNotification(message, type = 'success') {
     let container = document.getElementById('notification-container');
     if (!container) {
@@ -23,7 +18,6 @@ function showNotification(message, type = 'success') {
     notification.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
     container.appendChild(notification);
 
-    // Auto-remove after 3 seconds unless it's loading
     if (type !== 'loading') {
         setTimeout(() => {
             notification.style.opacity = '0';
@@ -35,12 +29,6 @@ function showNotification(message, type = 'success') {
     return notification;
 }
 
-// Function alias for compatibility with requested spec
-function showMessage(element, message, type) {
-    showNotification(message, type);
-}
-
-// Format tanggal Indonesia (DD MMMM YYYY)
 function formatDate(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -51,62 +39,71 @@ function formatDate(dateString) {
     });
 }
 
-// Cek apakah user login
 function isLoggedIn() {
     try {
-        const user = localStorage.getItem('user');
-        return user ? JSON.parse(user) : null;
+        const session = localStorage.getItem('userSession');
+        if (!session) return null;
+        
+        const user = JSON.parse(session);
+        
+        const validRoles = ['siswa', 'admin', 'dudi', 'mentor'];
+        if (!user.role || !validRoles.includes(String(user.role).toLowerCase().trim())) {
+            return null;
+        }
+        
+        return user;
     } catch (e) {
         console.error("Session Corrupted:", e);
-        localStorage.removeItem('user');
+        localStorage.removeItem('userSession');
         return null;
     }
 }
 
-// Redirect ke dashboard sesuai role
 function redirectByRole(user) {
-    if (!user) {
-        window.location.href = (window.location.pathname.includes('dashboard_')) ? '../index.html' : './index.html';
+    if (!user || !user.role) {
+        const target = window.location.pathname.includes('dashboard_') ? '../index.html' : 'index.html';
+        window.location.replace(target);
         return;
     }
     
+    const role = String(user.role).toLowerCase().trim();
+    
     const rolePaths = {
-        'admin': 'dashboard_admin/index.html',
         'siswa': 'dashboard_siswa/index.html',
+        'admin': 'dashboard_admin/index.html',
+        'dudi': 'dashboard_dudi/index.html',
         'mentor': 'dashboard_mentor/index.html'
     };
 
-    const role = (user.role || '').toLowerCase();
-    const target = rolePaths[role] || 'index.html';
+    const target = rolePaths[role];
     
-    // Adjust path based on current location
+    if (!target) {
+        console.error('Role tidak dikenali:', role);
+        showNotification('Role user tidak valid', 'error');
+        return;
+    }
+    
     const isInsideDashboard = window.location.pathname.includes('dashboard_');
-    const prefix = isInsideDashboard ? '../' : './';
+    const prefix = isInsideDashboard ? '../' : '';
     
-    window.location.href = prefix + target;
+    console.log(`Redirecting ${role} to ${prefix}${target}`);
+    window.location.replace(prefix + target);
 }
 
-// Check session at start of dashboard pages
 function checkSession() {
     const user = isLoggedIn();
     if (!user) {
-        window.location.href = '../index.html';
+        window.location.replace('../index.html');
         return null;
     }
     return user;
 }
 
-// Logout
 function logout() {
     const performLogout = () => {
-        localStorage.removeItem('user');
-        // Gunakan path absolut dari root agar lebih aman
-        window.location.href = window.location.origin + window.location.pathname.split('/').slice(0, -2).join('/') + '/index.html';
-        
-        // Fallback jika origin/pathname bermasalah (misal di file://)
-        setTimeout(() => {
-            window.location.href = '../index.html';
-        }, 100);
+        localStorage.removeItem('userSession');
+        sessionStorage.setItem('justLoggedOut', 'true');
+        window.location.replace('../index.html');
     };
 
     if (typeof Swal !== 'undefined') {
@@ -115,8 +112,8 @@ function logout() {
             text: "Anda akan diarahkan kembali ke halaman login.",
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#764ba2',
-            cancelButtonColor: '#d33',
+            confirmButtonColor: 'var(--accent)',
+            cancelButtonColor: 'var(--text-muted)',
             confirmButtonText: 'Ya, Keluar',
             cancelButtonText: 'Batal'
         }).then((result) => {

@@ -3,88 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Siswa Dashboard - PKL UTDI</title>
+    <title>Dashboard Siswa - PKL UTDI</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div id="notification-container"></div>
-    <div id="navbar-container"></div>
-
-    <main class="container fade-in">
-        <!-- New Profile Card -->
-        <div class="card" style="display: flex; gap: 20px; align-items: center; margin-bottom: 25px; border-left: 5px solid var(--primary);">
-            <div style="background: #f0f4f8; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.5rem;">
-                <i class="fas fa-user-graduate"></i>
-            </div>
-            <div style="flex: 1;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <h2 id="profileNama" style="margin: 0; font-size: 1.25rem;">-</h2>
-                    <button onclick="openEditProfileModal()" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.9rem;" title="Edit Profil">
-                        <i class="fas fa-edit"></i>
-                    </button>
+    <div id="sidebar-container"></div>
+    
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="main-wrapper">
+        <main class="container fade-in">
+            <div class="card" style="display: flex; gap: 20px; align-items: center; margin-bottom: 25px; border-left: 5px solid var(--primary);">
+                <div style="background: #f0f4f8; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.5rem;">
+                    <i class="fas fa-user-graduate"></i>
                 </div>
-                <div style="display: flex; gap: 15px; margin-top: 5px; font-size: 0.85rem; color: var(--text-muted);">
-                    <span><i class="fas fa-school" style="color: #6c757d;"></i> <span id="profileSekolah">-</span></span>
-                    <span><i class="fas fa-calendar-alt" style="color: #6c757d;"></i> <span id="profilePeriode">-</span></span>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3 class="card-title"><i class="fas fa-map-location-dot"></i> Presensi Kehadiran</h3>
-            <p style="margin-bottom: 1rem; color: var(--text-muted);">Pastikan GPS aktif sebelum melakukan absensi.</p>
-            <div id="absenFormContainer">
-                <div class="form-group">
-                    <label>Pilih Status:</label>
-                    <select id="statusAbsen" class="form-control" style="width: 100%; margin-bottom: 10px;">
-                        <option value="hadir">Hadir (Gunakan GPS)</option>
-                        <option value="izin">Izin (Perlu Bukti)</option>
-                        <option value="sakit">Sakit (Perlu Bukti)</option>
-                    </select>
-                </div>
-                <div id="buktiInputContainer" style="display: none;" class="form-group">
-                    <label>Link Bukti Drive:</label>
-                    <input type="text" id="linkBukti" class="form-control" placeholder="https://drive.google.com/...">
-                </div>
-                <button id="absenBtn" class="btn btn-primary btn-block"><i class="fas fa-fingerprint"></i> &nbsp;Konfirmasi Kehadiran</button>
-            </div>
-            <div id="absenStatus" style="margin-top: 10px; font-weight: 600;"></div>
-        </div>
-
-        <div class="grid grid-3">
-            <div class="card" style="grid-column: span 2;">
-                <h3 class="card-title"><i class="fas fa-book-open"></i> Jurnal Harian</h3>
-                <form id="jurnalForm">
-                    <div class="form-group">
-                        <label>Kegiatan Utama *</label>
-                        <textarea id="kegiatan" placeholder="Apa yang Anda kerjakan hari ini?" required></textarea>
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h2 id="profileNama" style="margin: 0; font-size: 1.25rem;">-</h2>
+                        <button onclick="openEditProfileModal()" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.9rem;" title="Edit Profil">
+                            <i class="fas fa-edit"></i>
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label>Catatan Tambahan (Opsional)</label>
-                        <textarea id="catatan" placeholder="Kendala atau detail lainnya..."></textarea>
+                    <div style="display: flex; gap: 15px; margin-top: 5px; font-size: 0.85rem; color: var(--text-muted);">
+                        <span><i class="fas fa-school" style="color: #6c757d;"></i> <span id="profileSekolah">-</span></span>
+                        <span><i class="fas fa-calendar-alt" style="color: #6c757d;"></i> <span id="profilePeriode">-</span></span>
                     </div>
-                    <button type="submit" id="saveJurnalBtn" class="btn btn-primary"><i class="fas fa-save"></i> &nbsp;Simpan Jurnal</button>
-                </form>
-                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-                <h4>Riwayat Jurnal</h4>
-                <div id="jurnalHistory" style="margin-top: 15px;">
-                    <p style="text-align: center; color: var(--text-muted);">Memuat riwayat...</p>
                 </div>
             </div>
-            <div class="card">
-                <h3 class="card-title"><i class="fas fa-tasks"></i> Daftar Tugas</h3>
-                <div id="tugasList">
-                    <p style="text-align: center; color: var(--text-muted);">Memuat tugas...</p>
+
+            <div class="grid grid-3" style="margin-bottom: 25px;">
+                <div class="card stat-card" style="border-top: 4px solid var(--warning);">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">STATUS HARI INI</div>
+                            <h3 id="statusHariIni" style="font-size: 1.5rem; margin-bottom: 5px; color: var(--primary);">Belum Absen</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Absensi</p>
+                        </div>
+                        <div style="background: #fef3c7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--warning);">
+                            <i class="fas fa-clock" style="font-size: 1.25rem;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card stat-card" style="border-top: 4px solid var(--success);">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">TOTAL KEHADIRAN</div>
+                            <h3 id="totalKehadiran" style="font-size: 1.5rem; margin-bottom: 5px; color: var(--primary);">0</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Pertemuan</p>
+                        </div>
+                        <div style="background: #dcfce7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--success);">
+                            <i class="fas fa-check-circle" style="font-size: 1.25rem;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card stat-card" style="border-top: 4px solid var(--accent);">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">TUGAS</div>
+                            <h3 id="totalTugas" style="font-size: 1.5rem; margin-bottom: 5px; color: var(--primary);">0/0</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Selesai/Total</p>
+                        </div>
+                        <div style="background: #eff6ff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                            <i class="fas fa-tasks" style="font-size: 1.25rem;"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 25px;">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 class="card-title" style="margin: 0; border: none; padding: 0;"><i class="fas fa-book-open"></i> Jurnal Terbaru</h3>
+                        <a href="jurnal.html" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600;">Lihat Semua <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></a>
+                    </div>
+                    <div id="jurnalTerbaru">
+                        <p style="text-align: center; color: var(--text-muted); padding: 20px;">Memuat jurnal...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 class="card-title" style="margin: 0; border: none; padding: 0;"><i class="fas fa-calendar-week"></i> Absensi Minggu Ini</h3>
+                        <a href="absensi.html" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; font-weight: 600;">Lihat Semua <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></a>
+                    </div>
+                    <div id="absensiMingguIni">
+                        <p style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
+                            <i class="fas fa-clipboard-list" style="font-size: 3rem; display: block; margin-bottom: 10px; opacity: 0.3;"></i>
+                            Belum ada absensi minggu ini
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script src="../config.js"></script>
     <script src="../components/utils.js"></script>
-    <script src="../components/navbar.js"></script>
+    <script src="sidebar.js"></script>
     <script src="../app.js"></script>
     <script src="siswa.js"></script>
 </body>

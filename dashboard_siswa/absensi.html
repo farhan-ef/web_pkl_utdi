@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Absensi - PKL UTDI</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div id="notification-container"></div>
+    <div id="sidebar-container"></div>
+    
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="main-wrapper">
+        <main class="container fade-in">
+            <div class="card" style="border-left: 5px solid var(--accent);">
+                <h3 class="card-title"><i class="fas fa-fingerprint"></i> Absensi Hari Ini</h3>
+                <p style="margin-bottom: 1rem; color: var(--text-muted);">Pastikan GPS aktif sebelum melakukan absensi.</p>
+                <div id="absenFormContainer">
+                    <div class="form-group">
+                        <label>Pilih Status:</label>
+                        <select id="statusAbsen" class="form-control" style="width: 100%; margin-bottom: 10px;">
+                            <option value="hadir">Hadir (Gunakan GPS)</option>
+                            <option value="izin">Izin (Perlu Bukti)</option>
+                            <option value="sakit">Sakit (Perlu Bukti)</option>
+                        </select>
+                    </div>
+                    <div id="buktiInputContainer" style="display: none;" class="form-group">
+                        <label>Link Bukti Drive:</label>
+                        <input type="text" id="linkBukti" class="form-control" placeholder="https://drive.google.com/...">
+                    </div>
+                    <button id="absenBtn" class="btn btn-primary btn-block">
+                        <i class="fas fa-fingerprint"></i> &nbsp;Konfirmasi Kehadiran
+                    </button>
+                </div>
+                <div id="absenStatus" style="margin-top: 10px;"></div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-history"></i> Riwayat Absensi</h3>
+                <div id="riwayatAbsensi">
+                    <p style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                        Memuat riwayat...
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../components/utils.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="../app.js"></script>
+    <script src="siswa.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupEventListeners();
+            await loadAttendanceStatus();
+            await loadRiwayatAbsensi();
+        });
+    </script>
+</body>
+</html>

@@ -3,119 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admisi Dashboard - PKL UTDI</title>
+    <title>Admin Dashboard - PKL UTDI</title>
     <link rel="stylesheet" href="../style.css">
-    <!-- Font Awesome for formal icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SweetAlert2 for better UI notifications -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 </head>
 <body>
     <div id="notification-container"></div>
-    <div id="navbar-container"></div>
-
-    <main class="container fade-in">
-        <div class="grid" style="grid-template-columns: 250px 1fr; align-items: start;">
-            <!-- Sidebar -->
-            <aside class="sidebar card">
-                <ul class="sidebar-menu">
-                    <li data-tab="summary" class="active"><i class="fas fa-chart-line"></i> Ringkasan</li>
-                    <li data-tab="users"><i class="fas fa-users"></i> Kelola User</li>
-                    <li data-tab="config"><i class="fas fa-map-marker-alt"></i> Setting GPS</li>
-                </ul>
-            </aside>
-
-            <!-- Content Area -->
-            <div class="content">
-                
-                <!-- Tab: Summary -->
-                <section id="tab-summary" class="tab-content active">
-                    <div class="grid grid-3" id="stats-container">
-                        <div class="card stat-card">
-                            <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
-                            <div class="stat-value" id="totalUsers">-</div>
-                            <div class="stat-label">Total Users</div>
+    <div id="sidebar-container"></div>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <main class="container fade-in">
+            
+            <!-- SECTION: RINGKASAN (Dashboard Home) -->
+            <div id="section-ringkasan">
+                <div class="card" style="display: flex; gap: 20px; align-items: center; margin-bottom: 25px; border-left: 5px solid var(--primary);">
+                    <div style="background: #f0f4f8; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.5rem;">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2 id="adminName" style="margin: 0; font-size: 1.25rem;">Admin</h2>
                         </div>
-                        <div class="card stat-card">
-                            <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
-                            <div class="stat-value" id="totalSiswa">-</div>
-                            <div class="stat-label">Total Siswa</div>
-                        </div>
-                        <div class="card stat-card">
-                            <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
-                            <div class="stat-value" id="totalTugas">-</div>
-                            <div class="stat-label">Total Tugas</div>
+                        <div style="display: flex; gap: 15px; margin-top: 5px; font-size: 0.85rem; color: var(--text-muted);">
+                            <span><i class="fas fa-crown" style="color: gold;"></i> Administrator</span>
                         </div>
                     </div>
-                    <div class="card">
-                        <h3 class="card-title">Selamat Datang, Admin</h3>
-                        <p>Pantau semua aktivitas PKL dari sini.</p>
-                    </div>
-                </section>
+                </div>
 
-                <!-- Tab: Users -->
-                <section id="tab-users" class="tab-content">
-                    <div class="card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h3 class="card-title">Daftar Pengguna</h3>
-                            <button class="btn btn-primary btn-sm" onclick="openUserModal()">+ Tambah User</button>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nama</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Sekolah/Instansi</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="userTableBody">
-                                    <tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Tab: Config -->
-                <section id="tab-config" class="tab-content">
-                    <div class="card">
-                        <h3 class="card-title"><i class="fas fa-satellite-dish"></i> Konfigurasi GPS & Geofencing</h3>
-                        <p style="margin-bottom: 2rem; color: var(--text-muted); font-size: 0.9rem;">
-                            Siswa hanya dapat melakukan absensi jika berada di dalam radius lokasi ini.
-                        </p>
-                        <form id="configForm">
-                            <div class="grid grid-3">
-                                <div class="form-group">
-                                    <label>Latitude Lokasi</label>
-                                    <input type="number" step="any" id="configLat" placeholder="-6.12345" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Longitude Lokasi</label>
-                                    <input type="number" step="any" id="configLng" placeholder="106.12345" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Radius Absensi (Meter)</label>
-                                    <input type="number" id="configRadius" placeholder="500" required>
-                                </div>
+                <!-- Stats Cards -->
+                <div class="grid grid-3" style="margin-bottom: 25px;">
+                    <div class="card stat-card" style="border-top: 4px solid var(--accent);">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">TOTAL SISWA</div>
+                                <h3 id="statSiswa" style="font-size: 1.5rem; margin-bottom: 5px; color: var(--primary);">-</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Peserta PKL</p>
                             </div>
-                            <button type="submit" id="saveConfigBtn" class="btn btn-primary" style="margin-top: 1rem;">💾 Simpan Pengaturan</button>
-                        </form>
+                            <div style="background: #eff6ff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                                <i class="fas fa-user-graduate" style="font-size: 1.25rem;"></i>
+                            </div>
+                        </div>
                     </div>
-                </section>
 
+                    <div class="card stat-card" style="border-top: 4px solid var(--success);">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">TOTAL GURU/MENTOR</div>
+                                <h3 id="statMentor" style="font-size: 1.5rem; margin-bottom: 5px; color: var(--primary);">-</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Pembimbing</p>
+                            </div>
+                            <div style="background: #dcfce7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--success);">
+                                <i class="fas fa-chalkboard-teacher" style="font-size: 1.25rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card stat-card" style="border-top: 4px solid var(--warning);">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">TOTAL USER</div>
+                                <h3 id="statUsers" style="font-size: 1.5rem; margin-bottom: 5px; color: var(--primary);">-</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Akun Sistem</p>
+                            </div>
+                            <div style="background: #fef3c7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--warning);">
+                                <i class="fas fa-users" style="font-size: 1.25rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </main>
 
+            <!-- SECTION: KELOLA USER -->
+            <div id="section-user" style="display: none;">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 class="card-title" style="margin: 0; border: none; padding: 0;"><i class="fas fa-users"></i> Kelola User</h3>
+                        <button onclick="showAddUserModal()" class="btn btn-primary" style="width: auto;">
+                            <i class="fas fa-plus"></i> Tambah User
+                        </button>
+                    </div>
+                    <div id="userTableContainer">
+                        <p style="text-align: center; padding: 20px;">Memuat data...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: SETTING GPS -->
+            <div id="section-gps" style="display: none;">
+                <div class="card" style="max-width: 600px;">
+                    <h3 class="card-title"><i class="fas fa-map-marker-alt"></i> Pengaturan Lokasi & Radius</h3>
+                    <form id="gpsForm">
+                        <div class="form-group">
+                            <label>Latitude</label>
+                            <input type="number" step="any" id="gpsLat" placeholder="-7.79..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Longitude</label>
+                            <input type="number" step="any" id="gpsLng" placeholder="110.36..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Radius (Meter)</label>
+                            <input type="number" id="gpsRadius" placeholder="100" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Simpan Pengaturan
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SCRIPTS -->
     <script src="../config.js"></script>
-    <script src="../components/utils.js"></script>
-    <script src="../components/navbar.js"></script>
-    <script src="../app.js"></script>
+    <script src="../components/utils.js"></script> <!-- Untuk fungsi logout, notif dll -->
+    <script src="../app.js"></script> <!-- Untuk fungsi API -->
     <script src="admin.js"></script>
 </body>
 </html>

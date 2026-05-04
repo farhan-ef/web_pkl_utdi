@@ -6,6 +6,7 @@
     <title>Login - PKL UTDI</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="login-page">
     <div id="notification-container"></div>
@@ -33,38 +34,59 @@
     </div>
 
     <script src="config.js"></script>
-    <script src="components/utils.js"></script>
     <script src="app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const loginForm = document.getElementById('loginForm');
             const loginBtn = document.getElementById('loginBtn');
 
+            // Cek jika baru logout
+            if (sessionStorage.getItem('justLoggedOut') === 'true') {
+                sessionStorage.removeItem('justLoggedOut');
+                console.log('👋 User baru logout, tetap di halaman login');
+                return;
+            }
+
+            // Auto redirect jika sudah login
             const user = isLoggedIn();
-            if (user) {
+            if (user && user.role) {
+                console.log('✅ User sudah login, redirecting...', user);
                 redirectByRole(user);
             }
 
+            // Handle login form submit
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
 
+                console.log('🔑 Login attempt - Email:', email);
+
                 loginBtn.disabled = true;
                 loginBtn.innerHTML = '⏳ Menghubungkan...';
-                const loadingNotif = showNotification('Sedang memproses login...', 'loading');
 
                 try {
                     const user = await login(email, password);
-                    loadingNotif.remove();
+                    
+                    console.log('🎉 Login success! User:', user);
+                    
+                    if (!user || !user.role) {
+                        console.error('❌ User data invalid:', user);
+                        throw new Error('Data user tidak valid - Role: ' + (user?.role || 'undefined'));
+                    }
+                    
                     showNotification('Login berhasil! Mengarahkan...', 'success');
-                    setTimeout(() => redirectByRole(user), 1000);
+                    
+                    setTimeout(() => {
+                        console.log('🚀 Redirecting to dashboard for role:', user.role);
+                        redirectByRole(user);
+                    }, 1000);
                 } catch (error) {
-                    loadingNotif.remove();
+                    console.error('💥 Login failed:', error);
                     loginBtn.disabled = false;
-                    loginBtn.innerHTML = 'Login';
-                    showNotification(error.message, 'error');
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> &nbsp;Masuk ke Dashboard';
+                    showNotification(error.message || 'Login gagal', 'error');
                 }
             });
         });

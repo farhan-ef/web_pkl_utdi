@@ -1,5 +1,5 @@
 const CONFIG = {
-    API_URL: 'https://script.google.com/macros/s/AKfycbw3glvK8utHaId0Qtw6xdQK5g5fG-8wixS2kXAX37PTUnjzD5gDHUK7-gMnoywT86OQqQ/exec',
+    API_URL: 'https://script.google.com/macros/s/AKfycbwTPZMpwefEP79_Xu4WYhVnsty1nf0PIvRzR8hnMFSAdiTKavhGGQAMY2tD1vaaQF7hFA/exec',
     APP_NAME: 'PKL UTDI',
     VERSION: "1.0.0"
 };

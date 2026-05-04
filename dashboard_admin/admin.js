@@ -1,192 +1,303 @@
-// ======================== ADMIN DASHBOARD LOGIC ========================
-
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Cek Sesi
+    // 1. Cek Session
     currentUser = checkSession();
     if (!currentUser || currentUser.role !== 'admin') {
         window.location.href = '../index.html';
         return;
     }
 
-    // 2. Load Navbar
-    loadNavbar('navbar-container', 'Admin Panel');
+    // 2. Setup Sidebar Khusus Admin
+    setupAdminSidebar();
 
-    // 3. Tab Navigation Logic
-    setupTabs();
-
-    // 4. Initial Load (All Data)
-    await Promise.all([
-        fetchStats(),
-        fetchUsers(),
-        fetchConfig()
-    ]);
+    // 3. Load Data Awal
+    document.getElementById('adminName').innerText = currentUser.nama || 'Admin';
+    await loadDashboardStats();
+    
+    // Load GPS Data initially
+    loadGPSData();
 });
 
-function setupTabs() {
-    const tabs = document.querySelectorAll('.sidebar-menu li');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', async () => {
-            const tabName = tab.getAttribute('data-tab');
-            
-            // UI Toggle
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
+// ==================== SIDEBAR ADMIN ====================
+function setupAdminSidebar() {
+    const container = document.getElementById('sidebar-container');
+    const userName = currentUser ? currentUser.nama : 'Admin';
 
-            // Data Load based on tab
-            if (tabName === 'summary') await fetchStats();
-            if (tabName === 'users') await fetchUsers();
-            if (tabName === 'config') await fetchConfig();
-        });
-    });
+    container.innerHTML = `
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-user">
+                <div class="user-avatar">${userName.charAt(0).toUpperCase()}</div>
+                <div class="user-info">
+                    <div class="user-name">${userName}</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul class="sidebar-menu">
+                    <li class="active" onclick="switchSection('ringkasan', this)">
+                        <a href="#"><i class="fas fa-chart-line"></i> <span>Ringkasan</span></a>
+                    </li>
+                    <li onclick="switchSection('user', this)">
+                        <a href="#"><i class="fas fa-users"></i> <span>Kelola User</span></a>
+                    </li>
+                    <li onclick="switchSection('gps', this)">
+                        <a href="#"><i class="fas fa-map-marker-alt"></i> <span>Setting GPS</span></a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button onclick="logout()" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> <span>Keluar</span>
+                </button>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+    `;
 }
 
-// --- SUMMARY ---
-async function fetchStats() {
-    try {
-        const data = await getDashboard(currentUser.id, 'admin');
-        if (data) {
-            document.getElementById('totalUsers').innerText = data.totalUsers || 0;
-            document.getElementById('totalSiswa').innerText = data.totalSiswa || 0;
-            document.getElementById('totalTugas').innerText = data.totalTugas || 0;
-        }
-    } catch (error) {
-        showNotification('Gagal memuat statistik', 'error');
+// Fungsi Navigasi Tab
+function switchSection(sectionId, element) {
+    // Hide all sections
+    document.getElementById('section-ringkasan').style.display = 'none';
+    document.getElementById('section-user').style.display = 'none';
+    document.getElementById('section-gps').style.display = 'none';
+
+    // Show selected
+    document.getElementById('section-' + sectionId).style.display = 'block';
+
+    // Update Sidebar Active State
+    const menuItems = document.querySelectorAll('.sidebar-menu li');
+    menuItems.forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+
+    // Load data based on section
+    if (sectionId === 'user') {
+        loadUserManagement();
+    } else if (sectionId === 'gps') {
+        loadGPSData();
+    }
+
+    // Close sidebar on mobile after click
+    if (window.innerWidth <= 768) {
+        closeSidebar();
     }
 }
 
-// --- USER MANAGEMENT ---
-async function fetchUsers() {
-    const tableBody = document.getElementById('userTableBody');
-    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>';
-    
+// Mobile Sidebar Toggle
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (sidebar && overlay) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+}
+
+// ==================== FITUR RINGKASAN ====================
+async function loadDashboardStats() {
+    try {
+        const stats = await getDashboard(currentUser.nama, 'admin');
+        
+        document.getElementById('statUsers').innerText = stats.totalUsers || 0;
+        document.getElementById('statSiswa').innerText = stats.totalSiswa || 0;
+        
+        const users = await getUsers();
+        const mentorCount = users.filter(u => String(u.role).toLowerCase() === 'mentor').length;
+        document.getElementById('statMentor').innerText = mentorCount;
+
+    } catch (error) {
+        console.error("Gagal load stats:", error);
+    }
+}
+
+// ==================== FITUR KELOLA USER ====================
+async function loadUserManagement() {
+    const container = document.getElementById('userTableContainer');
+    container.innerHTML = '<p style="text-align:center;">Memuat data...</p>';
+
     try {
         const users = await getUsers();
-        tableBody.innerHTML = '';
         
-        users.forEach(user => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${user.id}</td>
-                <td>${user.nama}</td>
-                <td>${user.email}</td>
-                <td><span class="badge ${user.role === 'admin' ? 'badge-danger' : (user.role === 'mentor' ? 'badge-warning' : 'badge-success')}">${user.role}</span></td>
-                <td style="font-size: 0.85rem; color: #666;">${user.nama_sekolah || '-'}</td>
-                <td>
-                    <div class="action-btns">
-                        <button class="btn btn-primary btn-sm" onclick="openUserModal(${JSON.stringify(user).replace(/"/g, '&quot;')})">Edit</button>
-                        <button class="btn btn-sm" style="background: var(--error); color: white;" onclick="handleDeleteUser(${user.id})">Del</button>
-                    </div>
-                </td>
+        if (!users || users.length === 0) {
+            container.innerHTML = '<p style="text-align:center;">Tidak ada data user.</p>';
+            return;
+        }
+
+        let html = `
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        users.forEach(u => {
+            html += `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.nama}</td>
+                    <td>${u.email}</td>
+                    <td><span class="badge badge-success">${u.role}</span></td>
+                    <td>
+                        <button onclick="deleteUserConfirm(${u.id}, '${u.nama}')" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">
+                            <i class="fas fa-trash" style="color: var(--error);"></i>
+                        </button>
+                    </td>
+                </tr>
             `;
-            tableBody.appendChild(tr);
         });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+
     } catch (error) {
-        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat data</td></tr>';
+        container.innerHTML = '<p style="color: red; text-align: center;">Gagal memuat user.</p>';
     }
 }
 
-async function openUserModal(user = null) {
-    const { value: formValues } = await Swal.fire({
-        title: user ? 'Edit Pengguna' : 'Tambah Pengguna Baru',
-        html:
-            `<div class="swal-form">
-                <input id="swal-nama" class="swal2-input" placeholder="Nama Lengkap" value="${user ? user.nama : ''}">
-                <input id="swal-email" class="swal2-input" placeholder="Email" value="${user ? user.email : ''}">
-                <input id="swal-pass" class="swal2-input" type="password" placeholder="Password" value="${user ? user.password : ''}">
-                <select id="swal-role" class="swal2-input">
-                    <option value="siswa" ${user?.role === 'siswa' ? 'selected' : ''}>Siswa</option>
-                    <option value="mentor" ${user?.role === 'mentor' ? 'selected' : ''}>Mentor</option>
-                    <option value="admin" ${user?.role === 'admin' ? 'selected' : ''}>Admin</option>
-                </select>
-            </div>`,
-        focusConfirm: false,
+function showAddUserModal() {
+    Swal.fire({
+        title: 'Tambah User Baru',
+        html: `
+            <div style="text-align: left;">
+                <div class="form-group"><label>Nama</label><input id="swal-nama" class="swal2-input"></div>
+                <div class="form-group"><label>Email</label><input id="swal-email" class="swal2-input"></div>
+                <div class="form-group"><label>Password</label><input id="swal-pass" class="swal2-input" type="password"></div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="swal-role" class="swal2-input">
+                        <option value="siswa">Siswa</option>
+                        <option value="mentor">Mentor/Guru</option>
+                        <option value="admin">Admin</option>
+                        <option value="dudi">DUDI</option>
+                    </select>
+                </div>
+                <div id="siswa-fields" style="display:none;">
+                     <div class="form-group"><label>Nama Sekolah</label><input id="swal-sekolah" class="swal2-input"></div>
+                </div>
+            </div>
+        `,
         showCancelButton: true,
+        confirmButtonText: 'Simpan',
         preConfirm: () => {
-            const role = document.getElementById('swal-role').value;
             return {
-                id: user ? user.id : null,
                 nama: document.getElementById('swal-nama').value,
                 email: document.getElementById('swal-email').value,
                 password: document.getElementById('swal-pass').value,
-                role: role
+                role: document.getElementById('swal-role').value,
+                nama_sekolah: document.getElementById('swal-sekolah').value
+            }
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const data = result.value;
+            if(!data.nama || !data.email || !data.password) {
+                Swal.fire('Error', 'Data tidak lengkap', 'error');
+                return;
+            }
+            try {
+                Swal.showLoading();
+                await addUser(data);
+                Swal.fire('Berhasil', 'User ditambahkan', 'success');
+                loadUserManagement();
+                loadDashboardStats();
+            } catch(e) {
+                Swal.fire('Gagal', e.message, 'error');
             }
         }
     });
 
-    if (formValues) {
-        try {
-            if (user) {
-                await updateUser(formValues);
-                showNotification('User diperbarui', 'success');
-            } else {
-                await addUser(formValues);
-                showNotification('User ditambahkan', 'success');
-            }
-            fetchUsers();
-        } catch (error) {
-            Swal.fire('Error', error.message, 'error');
-        }
-    }
+    document.getElementById('swal-role').addEventListener('change', (e) => {
+        document.getElementById('siswa-fields').style.display = e.target.value === 'siswa' ? 'block' : 'none';
+    });
 }
 
-async function handleDeleteUser(id) {
+async function deleteUserConfirm(id, nama) {
     const result = await Swal.fire({
         title: 'Hapus User?',
-        text: "Data yang dihapus tidak bisa dikembalikan!",
+        text: `Yakin ingin menghapus user ${nama}?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'Ya, Hapus!'
+        confirmButtonText: 'Ya, Hapus'
     });
 
     if (result.isConfirmed) {
         try {
             await deleteUser(id);
-            showNotification('User dihapus', 'success');
-            fetchUsers();
-        } catch (error) {
-            Swal.fire('Error', error.message, 'error');
+            Swal.fire('Terhapus!', 'User telah dihapus.', 'success');
+            loadUserManagement();
+            loadDashboardStats();
+        } catch(e) {
+            Swal.fire('Gagal', e.message, 'error');
         }
     }
 }
 
-// --- GPS CONFIG ---
-async function fetchConfig() {
+// ==================== FITUR SETTING GPS ====================
+async function loadGPSData() {
     try {
         const config = await getConfig();
-        document.getElementById('configLat').value = config.latitude || '';
-        document.getElementById('configLng').value = config.longitude || '';
-        document.getElementById('configRadius').value = config.radius || '';
+        if(config) {
+            document.getElementById('gpsLat').value = config.latitude || '';
+            document.getElementById('gpsLng').value = config.longitude || '';
+            document.getElementById('gpsRadius').value = config.radius || '';
+        }
     } catch (error) {
-        showNotification('Gagal memuat konfigurasi', 'error');
+        console.error("Gagal load GPS config", error);
     }
 }
 
-document.getElementById('configForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('saveConfigBtn');
-    
-    const configData = {
-        latitude: parseFloat(document.getElementById('configLat').value),
-        longitude: parseFloat(document.getElementById('configLng').value),
-        radius: parseInt(document.getElementById('configRadius').value)
-    };
+// FIX: Handle form submit dengan benar
+document.addEventListener('DOMContentLoaded', () => {
+    const gpsForm = document.getElementById('gpsForm');
+    if (gpsForm) {
+        gpsForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const lat = document.getElementById('gpsLat').value;
+            const lng = document.getElementById('gpsLng').value;
+            const radius = document.getElementById('gpsRadius').value;
 
-    btn.disabled = true;
-    btn.innerHTML = '⏳ Menyimpan...';
+            if (!lat || !lng || !radius) {
+                Swal.fire('Error', 'Semua field wajib diisi', 'error');
+                return;
+            }
 
-    try {
-        await updateConfig(configData);
-        Swal.fire('Berhasil', 'Konfigurasi GPS telah diperbarui.', 'success');
-    } catch (error) {
-        Swal.fire('Gagal', error.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '💾 Simpan Pengaturan';
+            try {
+                Swal.fire({
+                    title: 'Menyimpan...',
+                    didOpen: () => Swal.showLoading(),
+                    allowOutsideClick: false
+                });
+                
+                await updateConfig({ 
+                    latitude: parseFloat(lat), 
+                    longitude: parseFloat(lng), 
+                    radius: parseInt(radius) 
+                });
+                
+                Swal.fire('Berhasil', 'Lokasi berhasil diupdate', 'success');
+            } catch (error) {
+                Swal.fire('Gagal', error.message, 'error');
+            }
+        });
     }
 });

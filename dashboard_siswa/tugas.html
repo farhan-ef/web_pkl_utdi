@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Tugas - PKL UTDI</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div id="notification-container"></div>
+    <div id="sidebar-container"></div>
+    
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="main-wrapper">
+        <main class="container fade-in">
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-tasks"></i> Daftar Tugas</h3>
+                <div id="tugasList">
+                    <p style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                        Memuat tugas...
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../components/utils.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="../app.js"></script>
+    <script src="siswa.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadTugas();
+        });
+    </script>
+</body>
+</html>
