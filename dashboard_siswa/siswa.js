@@ -107,7 +107,7 @@ async function openEditProfileModal() {
             currentUser.nama_sekolah = formValues.nama_sekolah;
             currentUser.pkl_mulai = formValues.pkl_mulai;
             currentUser.pkl_selesai = formValues.pkl_selesai;
-            localStorage.setItem('userSession', JSON.stringify(currentUser));
+            localStorage.setItem('user', JSON.stringify(currentUser));
 
             renderProfile();
             Swal.fire('Berhasil', response.message, 'success');

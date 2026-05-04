@@ -390,7 +390,9 @@
       function handleGetPengumpulan(data) {
         var rows = getSheet('pengumpulan').getDataRange().getValues();
         var headers = rows.shift();
-        return rows.map(function(r) {
+        return rows.filter(function(r) {
+            return !data.tugas_id || String(r[1]).trim() === String(data.tugas_id).trim();
+        }).map(function(r) {
             return { id: r[0], tugas_id: r[1], siswa_id: r[2], link_drive: r[3], tanggal_kumpul: r[4], status: r[5] };
         });
       }
