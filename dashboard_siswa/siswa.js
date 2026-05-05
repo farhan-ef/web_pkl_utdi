@@ -660,27 +660,57 @@ async function loadTugas() {
             return;
         }
         
-        container.innerHTML = data.map(tugas => `
-            <div class="card" style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #eee; background: #fff; box-shadow: none;">
-                <h4 style="margin-bottom: 5px;">${tugas.judul}</h4>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">${tugas.deskripsi}</p>
-                
-                ${tugas.is_submitted ? `
-                    <div style="background: #e3faf3; color: #00b894; padding: 15px; border-radius: 8px; font-size: 0.85rem; text-align: center; font-weight: 600; line-height: 1.4;">
-                        ✅ Tugas sudah dikumpulkan.<br>
-                        <span style="font-weight: normal; font-size: 0.75rem;">Terimakasih sudah mengumpulkan tugas.</span>
+        container.innerHTML = data.map(tugas => {
+            // Prioritas: Jika sudah mengumpulkan, tampilkan sebagai sudah dikumpulkan
+            if (tugas.is_submitted) {
+                return `
+                    <div class="card" style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #eee; background: #fff; box-shadow: none;">
+                        <h4 style="margin-bottom: 5px;">${tugas.judul}</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">${tugas.deskripsi}</p>
+                        
+                        <div style="background: #e3faf3; color: #00b894; padding: 15px; border-radius: 8px; font-size: 0.85rem; text-align: center; font-weight: 600; line-height: 1.4;">
+                            ✅ Tugas sudah dikumpulkan.<br>
+                            <span style="font-weight: normal; font-size: 0.75rem;">Terimakasih sudah mengumpulkan tugas.</span>
+                        </div>
                     </div>
-                ` : `
-                    <div class="form-group" style="margin-bottom: 10px;">
-                        <label style="font-size: 0.75rem; color: #666;">Link Drive Pekerjaan:</label>
-                        <input type="text" id="link_tugas_${tugas.id}" class="form-control" placeholder="Tempel link Google Drive di sini..." style="font-size: 0.8rem; padding: 8px;">
+                `;
+            }
+            
+            // Jika belum mengumpulkan, cek status aktif/non-aktif
+            const isNonActive = !tugas.is_active;
+            
+            if (isNonActive) {
+                // Tampilan untuk tugas non-aktif (belum dikumpulkan)
+                return `
+                    <div class="card" style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #eee; background: #f8f9fa; opacity: 0.7;">
+                        <h4 style="margin-bottom: 5px; color: var(--text-muted);">${tugas.judul}</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">${tugas.deskripsi}</p>
+                        
+                        <div style="background: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; font-size: 0.85rem; text-align: center; border-left: 4px solid #ffc107;">
+                            <i class="fas fa-lock" style="margin-right: 8px;"></i>
+                            <strong>Tugas Non-Aktif</strong><br>
+                            <span style="font-size: 0.75rem;">Tugas ini sudah tidak dapat dikumpulkan</span>
+                        </div>
                     </div>
-                    <button onclick="handleTugasSubmit(${tugas.id})" id="btn_tugas_${tugas.id}" class="btn btn-primary btn-block" style="padding: 8px; font-size: 0.85rem; font-weight: 600;">
-                        Kumpulkan
-                    </button>
-                `}
-            </div>
-        `).join('');
+                `;
+            } else {
+                // Tampilan untuk tugas aktif yang belum dikumpulkan
+                return `
+                    <div class="card" style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #eee; background: #fff; box-shadow: none;">
+                        <h4 style="margin-bottom: 5px;">${tugas.judul}</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">${tugas.deskripsi}</p>
+                        
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label style="font-size: 0.75rem; color: #666;">Link Drive Pekerjaan:</label>
+                            <input type="text" id="link_tugas_${tugas.id}" class="form-control" placeholder="Tempel link Google Drive di sini..." style="font-size: 0.8rem; padding: 8px;">
+                        </div>
+                        <button onclick="handleTugasSubmit(${tugas.id})" id="btn_tugas_${tugas.id}" class="btn btn-primary btn-block" style="padding: 8px; font-size: 0.85rem; font-weight: 600;">
+                            Kumpulkan
+                        </button>
+                    </div>
+                `;
+            }
+        }).join('');
     } catch (error) {
         container.innerHTML = '<p style="color: red;">Gagal memuat tugas.</p>';
     }
@@ -717,8 +747,19 @@ async function loadRiwayatAbsensi() {
     const container = document.getElementById('riwayatAbsensi');
     if (!container) return;
 
+    container.innerHTML = `
+        <p style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+            Memuat riwayat...
+        </p>
+    `;
+
     try {
-        const data = await getRiwayatAbsensi(currentUser.id, currentUser.nama);
+        const response = await callAPI('getRiwayatAbsensi', { 
+            nama_siswa: currentUser.nama
+        });
+        
+        const data = response.data;
         
         if (!data || data.length === 0) {
             container.innerHTML = `
@@ -728,6 +769,27 @@ async function loadRiwayatAbsensi() {
                 </p>
             `;
             return;
+        }
+
+        // Fungsi untuk format waktu WIB
+        function formatWaktuWIB(waktuStr) {
+            if (!waktuStr) return '-';
+            
+            // Jika format ISO (1899-12-29T17:33:01.000Z)
+            if (waktuStr.includes('T')) {
+                const date = new Date(waktuStr);
+                // Tambah 7 jam untuk WIB (GMT+7)
+                const wibTime = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+                return wibTime.toLocaleTimeString('id-ID', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: false 
+                });
+            }
+            
+            // Jika sudah format jam biasa (HH:MM:SS)
+            return waktuStr;
         }
 
         container.innerHTML = `
@@ -745,14 +807,14 @@ async function loadRiwayatAbsensi() {
                         ${data.reverse().slice(0, 50).map(item => `
                             <tr>
                                 <td style="white-space: nowrap; font-weight: 500;">${formatDate(item.tanggal)}</td>
-                                <td style="white-space: nowrap;">${item.waktu || '-'}</td>
+                                <td style="white-space: nowrap; font-weight: 500;">${formatWaktuWIB(item.waktu)}</td>
                                 <td>
                                     <span class="badge ${getBadgeClass(item.status)}">
                                         ${item.status ? item.status.toUpperCase() : 'HADIR'}
                                     </span>
                                 </td>
                                 <td style="color: var(--text-muted); font-size: 0.85rem;">
-                                    ${item.jarak ? `${item.jarak}m` : '-'}
+                                    ${item.jarak ? item.jarak + 'm' : '-'}
                                 </td>
                             </tr>
                         `).join('')}
@@ -761,6 +823,7 @@ async function loadRiwayatAbsensi() {
             </div>
         `;
     } catch (error) {
+        console.error('Error loading riwayat absensi:', error);
         container.innerHTML = '<p style="color: var(--error); text-align: center;">Gagal memuat riwayat</p>';
     }
 }

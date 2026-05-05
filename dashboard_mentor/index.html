@@ -10,58 +10,82 @@
 </head>
 <body>
     <div id="notification-container"></div>
-    <div id="navbar-container"></div>
-
-    <main class="container fade-in">
-        <div class="grid grid-3">
-            <div class="card">
+    <div id="sidebar-container"></div>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <main class="container fade-in">
+            <!-- Section: Buat Tugas -->
+            <div class="card" style="margin-bottom: 25px;">
                 <h3 class="card-title"><i class="fas fa-plus-circle"></i> Buat Tugas Baru</h3>
                 <form id="tugasForm">
-                    <div class="form-group">
-                        <label>Judul Tugas *</label>
-                        <input type="text" id="judulTugas" placeholder="Contoh: Laporan Mingguan" required>
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label>Judul Tugas *</label>
+                            <input type="text" id="judulTugas" placeholder="Contoh: Laporan Mingguan" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Deadline (Opsional)</label>
+                            <input type="date" id="deadlineTugas">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Deskripsi *</label>
-                        <textarea id="deskripsiTugas" placeholder="Detail instruksi tugas..." required></textarea>
+                        <textarea id="deskripsiTugas" placeholder="Detail instruksi tugas..." rows="3" required></textarea>
                     </div>
-                    <div class="form-group">
-                        <label>Target Siswa (Opsional)</label>
-                        <select id="targetSiswa">
-                            <option value="all">-- Semua Siswa (Tugas Umum) --</option>
-                        </select>
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label>Target Siswa (Opsional)</label>
+                            <select id="targetSiswa">
+                                <option value="all">-- Semua Siswa (Tugas Umum) --</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button type="submit" id="createTugasBtn" class="btn btn-primary" style="width: 100%;">
+                                <i class="fas fa-paper-plane"></i> &nbsp;Publikasikan Tugas
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Deadline (Opsional)</label>
-                        <input type="date" id="deadlineTugas">
-                    </div>
-                    <button type="submit" id="createTugasBtn" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> &nbsp;Publikasikan Tugas</button>
                 </form>
             </div>
-            <div class="card" style="grid-column: span 2;">
+
+            <!-- Section: Monitoring Pengumpulan -->
+            <div class="card" style="margin-bottom: 25px;">
                 <h3 class="card-title"><i class="fas fa-list-check"></i> Monitoring Pengumpulan</h3>
                 <div id="mentorTugasList">
-                    <p style="text-align: center; color: var(--text-muted);">Memuat daftar tugas...</p>
+                    <p style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                        Memuat daftar tugas...
+                    </p>
                 </div>
             </div>
-        </div>
-        <div class="card">
-            <h3 class="card-title">📥 Pengumpulan Siswa</h3>
-            <div class="form-group" style="max-width: 400px; margin-bottom: 2rem;">
-                <label>Pilih Tugas</label>
-                <select id="selectTugas">
-                    <option value="">-- Pilih Tugas untuk Melihat Pengumpulan --</option>
-                </select>
+
+            <!-- Section: Pengumpulan Siswa -->
+            <div class="card">
+                <h3 class="card-title"><i class="fas fa-inbox"></i> Pengumpulan Siswa</h3>
+                <div class="form-group" style="max-width: 400px; margin-bottom: 2rem;">
+                    <label>Pilih Tugas</label>
+                    <select id="selectTugas">
+                        <option value="">-- Pilih Tugas untuk Melihat Pengumpulan --</option>
+                    </select>
+                </div>
+                <div id="pengumpulanList" class="grid grid-3">
+                    <p style="text-align: center; color: var(--text-muted); grid-column: 1 / -1; padding: 40px 20px;">
+                        <i class="fas fa-arrow-up" style="font-size: 2rem; display: block; margin-bottom: 10px; opacity: 0.3;"></i>
+                        Silakan pilih tugas di atas.
+                    </p>
+                </div>
             </div>
-            <div id="pengumpulanList" class="grid grid-3">
-                <p style="text-align: center; color: var(--text-muted); grid-column: 1 / -1;">Silakan pilih tugas di atas.</p>
-            </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <script src="../config.js"></script>
     <script src="../components/utils.js"></script>
-    <script src="../components/navbar.js"></script>
     <script src="../app.js"></script>
     <script src="mentor.js"></script>
 </body>
